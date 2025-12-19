@@ -4,6 +4,10 @@
 # Data files
 data.json
 
+# Log files
+bot.log
+bot.pid
+
 # Python
 __pycache__/
 *.py[cod]

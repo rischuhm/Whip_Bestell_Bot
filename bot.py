@@ -94,16 +94,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     is_user_admin = is_admin(user_id)
 
-    welcome_text = "Welcome to Whip Bestell Bot! 🎉\n\n"
+    welcome_text = "Willkommen beim Whip Bestell Bot! 🎉\n\n"
+    
+    # Show all commands for admins (both admin and regular user commands)
+    welcome_text += "Du kannst folgende Befehle verwenden:\n\n"
+    welcome_text += "📋 Für alle Nutzer:\n"
+    welcome_text += "/list_events - Verfügbare Events anzeigen\n"
+    welcome_text += "/enter_amount - Deine Ausgaben eintragen\n"
     
     if is_user_admin:
-        welcome_text += "You are an admin. You can:\n"
-        welcome_text += "/events - Manage events\n"
-        welcome_text += "/view_sums - View only sums (no personal details)\n"
-    else:
-        welcome_text += "You can:\n"
-        welcome_text += "/list_events - View available events\n"
-        welcome_text += "/enter_amount - Enter your money spent\n"
+        welcome_text += "\n👑 Admin-Befehle:\n"
+        welcome_text += "/create_event <name> - Neues Event erstellen\n"
+        welcome_text += "/events - Alle Events mit Statistiken anzeigen\n"
+        welcome_text += "/view_sums - Summen anzeigen (ohne persönliche Details)\n"
 
     await update.message.reply_text(welcome_text)
 
@@ -117,14 +120,14 @@ async def list_events(update: Update, context: ContextTypes.DEFAULT_TYPE):
     events = data.get("events", {})
 
     if not events:
-        await update.message.reply_text("No events available yet.")
+        await update.message.reply_text("Noch keine Events verfügbar.")
         return
 
-    text = "📅 Available Events:\n\n"
+    text = "📅 Verfügbare Events:\n\n"
     for event_id, event_data in events.items():
         text += f"• {event_data['name']}\n"
         text += f"  ID: {event_id}\n"
-        text += f"  Created: {event_data.get('created_at', 'N/A')}\n\n"
+        text += f"  Erstellt: {event_data.get('created_at', 'N/A')}\n\n"
 
     await update.message.reply_text(text)
 
@@ -138,7 +141,7 @@ async def enter_amount(update: Update, context: ContextTypes.DEFAULT_TYPE):
     events = data.get("events", {})
 
     if not events:
-        await update.message.reply_text("No events available yet. Please ask an admin to create one.")
+        await update.message.reply_text("Noch keine Events verfügbar. Bitte einen Admin bitten, ein Event zu erstellen.")
         return
 
     # Create inline keyboard with events
@@ -151,7 +154,7 @@ async def enter_amount(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
-        "Select an event to enter your amount:",
+        "Wähle ein Event aus, um deine Ausgabe einzutragen:",
         reply_markup=reply_markup
     )
 
@@ -194,11 +197,11 @@ async def handle_amount_input(update: Update, context: ContextTypes.DEFAULT_TYPE
         # Notify user
         event_name = data["events"][event_id]["name"]
         await update.message.reply_text(
-            f"✅ Successfully entered {amount:.2f} € for event: {event_name}"
+            f"✅ {amount:.2f} € erfolgreich für Event eingetragen: {event_name}"
         )
 
         # Notify admin (only amount, no personal details)
-        admin_text = f"💰 New entry: {amount:.2f} €"
+        admin_text = f"💰 Neue Eintragung: {amount:.2f} €"
         for admin_id in ADMIN_IDS:
             try:
                 await context.bot.send_message(
@@ -213,7 +216,7 @@ async def handle_amount_input(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     except ValueError:
         await update.message.reply_text(
-            "❌ Invalid amount. Please enter a valid number (e.g., 15.50 or 20)."
+            "❌ Ungültiger Betrag. Bitte gib eine gültige Zahl ein (z.B. 15,50 oder 20)."
         )
 
 
@@ -226,7 +229,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         event_id = query.data.replace("select_event_", "")
         context.user_data["waiting_for_amount"] = event_id
         await query.edit_message_text(
-            f"Please enter the amount you spent (e.g., 15.50 or 20):"
+            f"Bitte gib den Betrag ein, den du ausgegeben hast (z.B. 15,50 oder 20):"
         )
 
 
@@ -237,13 +240,13 @@ async def create_event(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_id = update.effective_user.id
     if not is_admin(user_id):
-        await update.message.reply_text("❌ This command is only available for admins.")
+        await update.message.reply_text("❌ Dieser Befehl ist nur für Admins verfügbar.")
         return
 
     if not context.args:
         await update.message.reply_text(
-            "Usage: /create_event <event_name>\n"
-            "Example: /create_event New Year Party"
+            "Verwendung: /create_event <event_name>\n"
+            "Beispiel: /create_event Silvester Party"
         )
         return
 
@@ -265,7 +268,7 @@ async def create_event(update: Update, context: ContextTypes.DEFAULT_TYPE):
     save_data(data)
 
     await update.message.reply_text(
-        f"✅ Event created successfully!\n"
+        f"✅ Event erfolgreich erstellt!\n"
         f"Name: {event_name}\n"
         f"ID: {event_id}"
     )
@@ -278,17 +281,17 @@ async def view_events(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_id = update.effective_user.id
     if not is_admin(user_id):
-        await update.message.reply_text("❌ This command is only available for admins.")
+        await update.message.reply_text("❌ Dieser Befehl ist nur für Admins verfügbar.")
         return
 
     data = load_data()
     events = data.get("events", {})
 
     if not events:
-        await update.message.reply_text("No events created yet.")
+        await update.message.reply_text("Noch keine Events erstellt.")
         return
 
-    text = "📅 All Events:\n\n"
+    text = "📅 Alle Events:\n\n"
     for event_id, event_data in events.items():
         # Count entries for this event
         entries = data.get("entries", {})
@@ -297,9 +300,9 @@ async def view_events(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         text += f"• {event_data['name']}\n"
         text += f"  ID: {event_id}\n"
-        text += f"  Total entries: {len(event_entries)}\n"
-        text += f"  Total sum: {total:.2f} €\n"
-        text += f"  Created: {event_data.get('created_at', 'N/A')}\n\n"
+        text += f"  Eintragungen: {len(event_entries)}\n"
+        text += f"  Gesamtsumme: {total:.2f} €\n"
+        text += f"  Erstellt: {event_data.get('created_at', 'N/A')}\n\n"
 
     await update.message.reply_text(text)
 
@@ -311,7 +314,7 @@ async def view_sums(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_id = update.effective_user.id
     if not is_admin(user_id):
-        await update.message.reply_text("❌ This command is only available for admins.")
+        await update.message.reply_text("❌ Dieser Befehl ist nur für Admins verfügbar.")
         return
 
     data = load_data()
@@ -319,7 +322,7 @@ async def view_sums(update: Update, context: ContextTypes.DEFAULT_TYPE):
     events = data.get("events", {})
 
     if not entries:
-        await update.message.reply_text("No entries yet.")
+        await update.message.reply_text("Noch keine Eintragungen.")
         return
 
     # Group by event
@@ -327,7 +330,7 @@ async def view_sums(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     for entry_id, entry_data in entries.items():
         event_id = entry_data.get("event_id")
-        event_name = events.get(event_id, {}).get("name", "Unknown Event")
+        event_name = events.get(event_id, {}).get("name", "Unbekanntes Event")
         amount = entry_data.get("amount", 0)
 
         if event_id not in totals_by_event:
@@ -337,15 +340,15 @@ async def view_sums(update: Update, context: ContextTypes.DEFAULT_TYPE):
         totals_by_event[event_id]["count"] += 1
 
     # Display only sums
-    text = "💰 Sums by Event (No Personal Details):\n\n"
+    text = "💰 Summen nach Event (ohne persönliche Details):\n\n"
     for event_id, event_info in totals_by_event.items():
         text += f"📅 {event_info['name']}\n"
-        text += f"   Total: {event_info['total']:.2f} €\n"
-        text += f"   Entries: {event_info['count']}\n\n"
+        text += f"   Gesamt: {event_info['total']:.2f} €\n"
+        text += f"   Eintragungen: {event_info['count']}\n\n"
 
-    # Overall total
+    # Overall total (always show for consistency)
     overall_total = sum(event_info["total"] for event_info in totals_by_event.values())
-    text += f"💰 Overall Total: {overall_total:.2f} €"
+    text += f"💰 Gesamt: {overall_total:.2f} €"
 
     await update.message.reply_text(text)
 
@@ -372,20 +375,19 @@ async def handle_mention(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     is_user_admin = is_admin(user_id)
     
-    help_text = "👋 Hi! I'm the Whip Bestell Bot!\n\n"
-    help_text += "You can use commands like:\n"
+    help_text = "👋 Hi! Ich bin der Whip Bestell Bot!\n\n"
+    help_text += "Du kannst folgende Befehle verwenden:\n\n"
+    help_text += "📋 Für alle Nutzer:\n"
+    help_text += "• /list_events - Verfügbare Events anzeigen\n"
+    help_text += "• /enter_amount - Deine Ausgaben eintragen\n"
     
     if is_user_admin:
-        help_text += "• /list_events - View available events\n"
-        help_text += "• /enter_amount - Enter your money spent\n"
-        help_text += "• /create_event <name> - Create a new event (admin)\n"
-        help_text += "• /events - View all events (admin)\n"
-        help_text += "• /view_sums - View sums (admin)\n"
-    else:
-        help_text += "• /list_events - View available events\n"
-        help_text += "• /enter_amount - Enter your money spent\n"
+        help_text += "\n👑 Admin-Befehle:\n"
+        help_text += "• /create_event <name> - Neues Event erstellen\n"
+        help_text += "• /events - Alle Events mit Statistiken anzeigen\n"
+        help_text += "• /view_sums - Summen anzeigen (ohne persönliche Details)\n"
     
-    help_text += "\n💡 Tip: For entering amounts, please message me privately for security."
+    help_text += "\n💡 Tipp: Zum Eintragen von Beträgen bitte privat schreiben (Sicherheit)."
     
     await update.message.reply_text(help_text)
 

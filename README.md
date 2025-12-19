@@ -1,63 +1,61 @@
 # Whip Bestell Bot
 
-A Telegram bot for managing event expenses and bookings.
+Ein Telegram-Bot zur Verwaltung von Event-Ausgaben und Buchungen.
 
-## Features
+## Funktionen
 
-### For All Users
-- View available events
-- Enter money spent for events
-- Interact with the bot in groups by mentioning it (@botname)
+### Für alle Nutzer
+- Verfügbare Events anzeigen
+- Ausgaben für Events eintragen
+- Mit dem Bot in Gruppen interagieren, indem man ihn erwähnt (@botname)
 
-### For Admins
-- Create events
-- View only sums (without personal details)
-- Receive notifications when users enter amounts
+### Für Admins
+- Events erstellen
+- Nur Summen anzeigen (ohne persönliche Details)
+- Benachrichtigungen erhalten, wenn Nutzer Beträge eintragen
 
-## Setup
+## Installation
 
-1. Install dependencies:
+1. Abhängigkeiten installieren:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Configure the bot:
-   - Ensure your `.env` file contains:
+2. Bot konfigurieren:
+   - Stelle sicher, dass deine `.env` Datei folgendes enthält:
      ```
-     BOT_TOKEN=your_bot_token_here
-     ADMIN_IDS=your_telegram_user_id,another_admin_id
+     TOKEN=dein_bot_token_hier
+     ADMIN_IDS=deine_telegram_user_id,weitere_admin_id
      ```
-   - To find your Telegram user ID, message [@userinfobot](https://t.me/userinfobot) on Telegram
+   - Um deine Telegram User ID zu finden, schreibe [@userinfobot](https://t.me/userinfobot) auf Telegram
 
-3. Run the bot:
+3. Bot starten:
 ```bash
 python bot.py
 ```
 
-## Commands
+## Befehle
 
-### For All Users
-- `/start` - Start the bot and see available commands
-- `/list_events` - View all available events
-- `/enter_amount` - Enter your money spent for an event
+### Für alle Nutzer
+- `/start` - Bot starten und verfügbare Befehle anzeigen
+- `/list_events` - Alle verfügbaren Events anzeigen
+- `/enter_amount` - Deine Ausgaben für ein Event eintragen
 
-### For Admins
-- `/create_event <event_name>` - Create a new event
-- `/events` - View all events with statistics
-- `/view_sums` - View only sums without personal details
+### Für Admins
+- `/create_event <event_name>` - Ein neues Event erstellen
+- `/events` - Alle Events mit Statistiken anzeigen
+- `/view_sums` - Nur Summen ohne persönliche Details anzeigen
 
-## Data Storage
+## Datenspeicherung
 
-All data is stored in `data.json` file. This includes:
-- Events (name, creation date, creator)
-- Entries (event ID, user ID, username, amount, timestamp)
+Alle Daten werden in der `data.json` Datei gespeichert. Dies umfasst:
+- Events (Name, Erstellungsdatum, Ersteller)
+- Eintragungen (Event ID, User ID, Benutzername, Betrag, Zeitstempel)
 
-## Privacy & Usage
+## Datenschutz & Nutzung
 
-- The bot works in **private messages** and in **groups when mentioned** (@botname)
-- Commands can be used in groups by mentioning the bot: `/list_events@botname`
-- For entering amounts, users should message the bot privately for security
-- When users enter amounts, admins receive notifications with only the amount (no personal details)
-- Admins can only view sums without personal details using `/view_sums` command
-
-
+- Der Bot funktioniert in **privaten Nachrichten** und in **Gruppen, wenn er erwähnt wird** (@botname)
+- Befehle können in Gruppen verwendet werden, indem der Bot erwähnt wird: `/list_events@botname`
+- Zum Eintragen von Beträgen sollten Nutzer dem Bot privat schreiben (Sicherheit)
+- Wenn Nutzer Beträge eintragen, erhalten Admins Benachrichtigungen mit nur dem Betrag (ohne persönliche Details)
+- Admins können nur Summen ohne persönliche Details mit dem Befehl `/view_sums` anzeigen
